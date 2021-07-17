@@ -118,9 +118,7 @@ export default class Auth extends Vue {
     const data = await api.users.create(this.formdata);
     if (data.status >= 400) {
       this.info = data.data;
-      console.log(this.info);
     }
-    console.log(data);
     this.loading = false;
     if (data.status == 200) {
       this.setLogined(data.data.token);
@@ -130,11 +128,7 @@ export default class Auth extends Vue {
   async login(): Promise<void> {
     this.loading = true;
     const data = await api.users.login(this.formdata);
-    if (data.status >= 400) {
-      this.info = data.data;
-      console.log(this.info);
-    }
-    console.log(data);
+    if (data.status >= 400) this.info = data.data;
     this.loading = false;
     if (data.status == 200) {
       this.setLogined(data.data.token);
@@ -143,9 +137,7 @@ export default class Auth extends Vue {
     }
   }
   submitForm(): void {
-    this.$refs.form.validate((valid: boolean, data: IAuthData) => {
-      console.log(valid, data);
-      console.log(this.$refs.form);
+    this.$refs.form.validate((valid: boolean) => {
       if (valid) {
         if (this.activeName == "login") this.login();
         else this.register();
