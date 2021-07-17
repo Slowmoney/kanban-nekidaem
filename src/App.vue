@@ -1,30 +1,44 @@
 <template>
-  <div id="nav">
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </div>
-  <router-view />
+  <el-container>
+    <el-header style="text-align: right">
+      <el-button v-show="$route.path !== '/'" @click="this.$router.push('/')"
+        ><i class="el-icon-s-home"></i
+      ></el-button>
+      <el-button @click="authBtnHandler">{{
+        auth.isLogging ? "Выйти" : "Войти"
+      }}</el-button>
+    </el-header>
+    <el-main>
+      <router-view />
+    </el-main>
+  </el-container>
 </template>
-
-<style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-
-#nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
+<script lang="ts">
+import { Options, Vue } from "vue-class-component";
+import { mapState, mapMutations } from "vuex";
+@Options({
+  computed: {
+    ...mapState(["auth"]),
+  },
+  methods: {
+    ...mapMutations(["signout"]),
+  },
+})
+export default class App extends Vue {
+  signout!: () => void;
+  auth!: {
+    token: string;
+    isLogging: boolean;
+  };
+  authBtnHandler(): void {
+    if (this.auth.isLogging) this.signout();
+    else this.$router.push("/auth");
+  }
+  created(): void {
+    if (!this.auth.isLogging) {
+      //this.$router.push("auth");
     }
   }
 }
-</style>
+</script>
+<style lang="scss"></style>
