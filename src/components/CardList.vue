@@ -4,7 +4,13 @@
       <div class="card-list__title" :style="{ backgroundColor: color }">
         {{ title }} {{ count }}
       </div>
-      <draggable :list="list" group="a" item-key="name" @change="change">
+      <draggable
+        :disabled="!auth.isLogined"
+        :list="list"
+        group="card"
+        item-key="name"
+        @change="change"
+      >
         <template #item="{ element }">
           <el-row class="card-list-item">
             <el-col :span="20">
@@ -13,8 +19,8 @@
             </el-col>
             <el-col :span="4">
               <el-button
+                v-if="auth.isLogined"
                 @click="deleteItem(element.id)"
-                type="danger"
                 icon="el-icon-delete"
                 circle
               ></el-button>
@@ -23,7 +29,7 @@
         </template>
 
         <template #footer>
-          <el-row style="padding: 16px" v-if="auth.isLogging">
+          <el-row style="padding: 16px" v-if="auth.isLogined">
             <el-col :span="18"><el-input v-model="newtext" /></el-col>
             <el-col :span="6"
               ><el-button style="margin-left: 10px" @click="add"
@@ -42,7 +48,7 @@ import { ICard, IKanBanItem } from "@/store/types";
 import { Options, Vue } from "vue-class-component";
 import draggable, { ChangeEvent } from "vuedraggable";
 import { mapActions, mapState } from "vuex";
-import type { UpdateData } from "@/plugin/api";
+import type { Row, UpdateData } from "@/plugin/api";
 @Options({
   props: {
     title: String,
@@ -63,16 +69,16 @@ import type { UpdateData } from "@/plugin/api";
 export default class CardList extends Vue {
   updateItem!: (data: UpdateData) => Promise<void>;
   deleteItem!: (id: number) => Promise<void>;
-  getCards!: (row: "0" | "1" | "2" | "3") => void;
+  getCards!: (row: Row) => void;
   auth!: {
     token: string;
-    isLogging: boolean;
+    isLogined: boolean;
   };
   title!: string;
   color!: string;
   list!: IKanBanItem[];
   newtext = "";
-  rowid!: "0" | "1" | "2" | "3";
+  rowid!: Row;
   get count(): number {
     return this.list.length;
   }
@@ -90,8 +96,6 @@ export default class CardList extends Vue {
   }
 }
 </script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
 .card-list {
   &-item {

@@ -5,7 +5,7 @@
         ><i class="el-icon-s-home"></i
       ></el-button>
       <el-button @click="authBtnHandler">{{
-        auth.isLogging ? "Выйти" : "Войти"
+        auth.isLogined ? "Выйти" : "Войти"
       }}</el-button>
     </el-header>
     <el-main>
@@ -15,29 +15,29 @@
 </template>
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
-import { mapState, mapMutations } from "vuex";
+import { mapState, mapMutations, mapActions } from "vuex";
 @Options({
   computed: {
     ...mapState(["auth"]),
   },
   methods: {
     ...mapMutations(["signout"]),
+    ...mapActions(["checkAuth"]),
   },
 })
 export default class App extends Vue {
+  checkAuth!: () => void;
   signout!: () => void;
   auth!: {
     token: string;
-    isLogging: boolean;
+    isLogined: boolean;
   };
   authBtnHandler(): void {
-    if (this.auth.isLogging) this.signout();
+    if (this.auth.isLogined) this.signout();
     else this.$router.push("/auth");
   }
   created(): void {
-    if (!this.auth.isLogging) {
-      //this.$router.push("auth");
-    }
+    if (!this.auth.isLogined) this.checkAuth();
   }
 }
 </script>

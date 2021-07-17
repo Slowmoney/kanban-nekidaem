@@ -1,10 +1,21 @@
-import { createStore, Store } from "vuex";
+import { createStore, Store, StoreOptions } from "vuex";
 import api, { Row, UpdateData } from "@/plugin/api";
-import type { ICard } from "./types";
-function saveKanban(kanban: any) {
+import type { ICard, IKanBan } from "./types";
+function saveKanban (kanban: IKanBan[])
+{
     localStorage.setItem("kanban", JSON.stringify(kanban));
 }
-const state = {
+
+interface IState
+{
+    kanban: IKanBan[];
+    auth: {
+        token: string;
+        isLogined: boolean;
+    };
+}
+
+const state: StoreOptions<IState> = {
     state: {
         kanban: [
             {
@@ -30,52 +41,46 @@ const state = {
         ],
         auth: {
             token: "",
-            isLogging: false
+            isLogined: false
         }
     },
-    getters: {
-
-    },
+    getters: {},
     mutations: {
-        setLogined (state: any, token: string)
+        setLogined (state, token: string)
         {
-            console.log(state, token);
-
             state.auth.token = token
-            state.auth.isLogging = true
+            state.auth.isLogined = true
             localStorage.setItem("token", token);
         },
-        signout (state: any)
+        signout (state)
         {
-            console.log(state);
             state.auth.token = ""
-            state.auth.isLogging = false
+            state.auth.isLogined = false
             localStorage.removeItem("token")
         },
-        addItem (state: any, data: ICard)
+        addItem (state, data: ICard)
         {
-            state.kanban[data.row].items.push(data)
+            state.kanban[data.row as unknown as number].items.push(data)
             saveKanban(state.kanban);
         },
-        clearItems (state: any, row: ICard["row"])
+        clearItems (state, row: ICard["row"])
         {
-            state.kanban[row].items = []
+            state.kanban[row as unknown as number].items = []
             saveKanban(state.kanban);
         },
-        deleteItem (state: any, id: number)
+        deleteItem (state, id: number)
         {
-            state.kanban.forEach((e: any) => {
-                const index = e.items.findIndex((e: any) => e.id == id)
-                if (~index) {
-                    e.items.splice(index, 1)
-                }
+            state.kanban.forEach((e) =>
+            {
+                const index = e.items.findIndex((e) => e.id == id)
+                if(~index) e.items.splice(index, 1)
             });
             saveKanban(state.kanban);
         }
     },
     actions: {
-        async add (state: any, data: {
-            row: "0" | "1" | "2" | "3";
+        async add (state, data: {
+            row: Row;
             text: string;
         })
         {
@@ -88,42 +93,40 @@ const state = {
             }
 
         },
-        async getCards (state: any, row: "0" | "1" | "2" | "3")
+        async getCards (state, row: Row)
         {
-            if(state.state.auth.isLogging)
+            if(state.state.auth.isLogined)
             {
                 const _response = await api.cards.get(row)
                 if(_response.status == 200)
                 {
                     state.commit("clearItems", row)
                     _response.data.forEach(e => state.commit("addItem", e))
-
                 }
             }
         },
-        checkAuth (state: any)
+        checkAuth (state)
         {
             const token = localStorage.getItem("token")
-            if (token) state.commit('setLogined', token)
+            if(token) state.commit('setLogined', token)
         },
-        async deleteItem (state: any, id: number)
+        async deleteItem (state, id: number)
         {
             state.commit('deleteItem', id)
             api.cards.delete(id);
         },
-        async updateItem (state: any, data: UpdateData)
+        async updateItem (state, data: UpdateData)
         {
             const row = data.row !== undefined ? data.row : data.item.row;
             const text = data.text !== undefined ? data.text : data.item.text;
-            api.cards.update(data.item.id, { row, text, seq_num: data.item.seq_num})
+            api.cards.update(data.item.id, { row, text, seq_num: data.item.seq_num })
         },
-        loadKanBan (state: any)
+        loadKanBan (state)
         {
             const data = localStorage.getItem("kanban")
-            if (data) 
+            if(data)
                 state.state.kanban = JSON.parse(data)
         }
-    },
-    modules: {},
+    }
 }
 export default createStore(state);

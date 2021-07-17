@@ -34,7 +34,7 @@ export default class KanBan extends Vue {
   add!: () => void;
   auth!: {
     token: string;
-    isLogging: boolean;
+    isLogined: boolean;
   };
   created(): void {
     this.loadKanBan();

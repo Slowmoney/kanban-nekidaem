@@ -1,10 +1,10 @@
 <template>
   <div v-loading="loading">
-    <div v-if="auth.isLogging">
+    <div v-if="auth.isLogined">
       <el-button @click="signout">Выйти</el-button>
     </div>
-    <div v-if="!auth.isLogging">
-      <el-tabs v-model="activeName" @tab-click="handleClick">
+    <div v-if="!auth.isLogined">
+      <el-tabs v-model="activeName">
         <el-tab-pane label="Авторизация" name="login">Авторизация</el-tab-pane>
         <el-tab-pane label="Регистрация" name="registation"
           >Регистрация</el-tab-pane
@@ -84,23 +84,21 @@
 <script lang="ts">
 import api, { IAuthData } from "@/plugin/api";
 import { Options, Vue } from "vue-class-component";
-import { mapState, mapMutations, mapActions } from "vuex";
+import { mapState, mapMutations } from "vuex";
 @Options({
   computed: {
     ...mapState(["auth"]),
   },
   methods: {
     ...mapMutations(["setLogined", "signout"]),
-    ...mapActions(["checkAuth"]),
   },
 })
 export default class Auth extends Vue {
-  checkAuth!: () => Promise<void>;
   setLogined!: (token: string[]) => void;
   signout!: () => void;
   auth!: {
     token: string;
-    isLogging: boolean;
+    isLogined: boolean;
   };
   loading = false;
   declare $refs: {
@@ -186,8 +184,7 @@ export default class Auth extends Vue {
     return this.info[name];
   }
   async mounted(): Promise<void> {
-    if (!this.auth.isLogging) await this.checkAuth();
-    if (this.auth.isLogging) this.$router.push("/");
+    if (this.auth.isLogined) this.$router.push("/");
   }
 }
 </script>
